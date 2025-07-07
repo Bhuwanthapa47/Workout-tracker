@@ -1,5 +1,6 @@
 package com.example.workout_tracker.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,7 +23,9 @@ public class WorkoutItem {
 
     @ManyToOne
     @JoinColumn(name = "workout_plan_id")
+    @JsonBackReference
     private WorkoutPlan workoutPlan;
+
 
     @ManyToOne
     @JoinColumn(name = "exercise_id")

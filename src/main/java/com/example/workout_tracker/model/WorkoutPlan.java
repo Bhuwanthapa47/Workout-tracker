@@ -1,5 +1,6 @@
 package com.example.workout_tracker.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,6 +30,9 @@ public class WorkoutPlan {
 
     private LocalDate date;
 
-    @OneToMany(mappedBy = "workoutPlan", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "workoutPlan", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonManagedReference
     private List<WorkoutItem> items;
+
+
 }

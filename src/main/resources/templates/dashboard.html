@@ -374,7 +374,10 @@
 
         const items = Array.from(workoutItemsContainer.children).map(row => {
             return {
-                exerciseId: row.querySelector(".workout-exercise-id").value,
+                exercise: {
+                    id: row.querySelector(".workout-exercise-id").value
+                }
+                ,
                 plannedSets: row.querySelector(".workout-planned-sets").value,
                 plannedReps: row.querySelector(".workout-planned-reps").value,
                 plannedWeight: row.querySelector(".workout-planned-weight").value
