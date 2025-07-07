@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(120deg, #f8fafc 0%, #e0e7ff 100%);
+        }
+        .dashboard-header {
+            background: linear-gradient(90deg, #6366f1 0%, #60a5fa 100%);
+            color: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 4px 24px rgba(99,102,241,0.12);
+            padding: 2rem 2rem 1rem 2rem;
+            margin-bottom: 2rem;
+        }
+        .dashboard-section {
+            margin-bottom: 2.5rem;
+        }
+        .card {
+            border-radius: 1rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        .table {
+            border-radius: 0.75rem;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .table-hover tbody tr:hover {
+            background-color: #f1f5f9;
+        }
+        .btn {
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .btn:hover {
+            box-shadow: 0 2px 8px rgba(99,102,241,0.12);
+            transform: translateY(-2px) scale(1.03);
+        }
+        .footer {
+            margin-top: 3rem;
+            padding: 1.5rem 0 0.5rem 0;
+            text-align: center;
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+        /* Stats cards alignment for real-world look */
+        .card.text-bg-success, .card.text-bg-warning {
+            min-height: 90px;
+            display: flex;
+            align-items: center;
+        }
+        .card.text-bg-warning .card-body {
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
+        }
+        #favorite-exercise {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+<div class="container py-4">
+    <div class="dashboard-header mb-4">
+        <h1 class="mb-1"><i class="bi bi-bar-chart-steps me-2"></i>Dashboard</h1>
+        <p class="text-light">Welcome back! Track your progress and stay motivated.</p>
+    </div>
+
+    <div class="dashboard-section">
+        <!-- Exercises -->
+        <h2 class="mb-3"><i class="bi bi-list-ul me-2"></i>Exercises</h2>
+        <form id="exercise-form" class="row g-2 mb-3">
+            <div class="col-auto">
+                <input type="text" id="exercise-name" class="form-control" placeholder="Exercise Name" required>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i>Add Exercise</button>
+            </div>
+        </form>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody id="exercises-table"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="dashboard-section">
+        <!-- Goals -->
+        <h2 class="mb-3"><i class="bi bi-bullseye me-2"></i>Goals</h2>
+        <form id="goal-form" class="row g-2 mb-3">
+            <input type="hidden" id="goal-user-id" value="1">
+            <div class="col-md-3">
+                <label>Exercise</label>
+                <select id="goal-exercise-id" class="form-select" required></select>
+            </div>
+            <div class="col-md-3">
+                <label>Target Weight (kg)</label>
+                <input type="number" id="goal-target-weight" class="form-control" required>
+            </div>
+            <div class="col-md-3">
+                <label>Target Date</label>
+                <input type="date" id="goal-target-date" class="form-control" required>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-success w-100"><i class="bi bi-flag me-1"></i>Add Goal</button>
+            </div>
+        </form>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Exercise</th>
+                    <th>Target Weight</th>
+                    <th>Target Date</th>
+                </tr>
+                </thead>
+                <tbody id="goals-table"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="dashboard-section">
+        <!-- Workout Plans -->
+        <h2 class="mb-3"><i class="bi bi-calendar2-check me-2"></i>Workout Plans</h2>
+        <form id="workout-form" class="mb-3">
+            <input type="hidden" id="workout-user-id" value="1">
+            <div class="row g-2 mb-2">
+                <div class="col-md-3">
+                    <label>Date</label>
+                    <input type="date" id="workout-date" class="form-control" required>
+                </div>
+            </div>
+            <div id="workout-items" class="mb-2"></div>
+            <div>
+                <button type="button" onclick="addWorkoutItem()" class="btn btn-outline-secondary btn-sm"><i class="bi bi-plus-circle me-1"></i>Add Exercise</button>
+                <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check2-square me-1"></i>Create Workout Plan</button>
+            </div>
+        </form>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Items</th>
+                    <th>Completed</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody id="workout-table"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="dashboard-section">
+        <!-- Stats -->
+        <h2 class="mb-3"><i class="bi bi-graph-up-arrow me-2"></i>Statistics</h2>
+        <button onclick="fetchStats()" class="btn btn-info btn-sm mb-3"><i class="bi bi-arrow-clockwise me-1"></i>Refresh Stats</button>
+        <div class="row g-3">
+            <div class="col-md-3">
+                <div class="card text-bg-primary h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="fs-3 me-2"><i class="bi bi-calendar-week"></i></span>
+                            <h5 class="card-title mb-0">Weekly Stats</h5>
+                        </div>
+                        <div id="weekly-stats"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card text-bg-light h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="fs-3 me-2"><i class="bi bi-calendar3"></i></span>
+                            <h5 class="card-title mb-0">Monthly Stats</h5>
+                        </div>
+                        <canvas id="monthly-stats-chart" height="120"></canvas>
+                        <div id="monthly-stats" class="small mt-2"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 d-flex flex-column justify-content-between" style="gap: 1rem; height: 100%;">
+                <div class="card text-bg-success">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="fs-3 me-2"><i class="bi bi-trophy"></i></span>
+                            <h5 class="card-title mb-0">Best Lifts</h5>
+                        </div>
+                        <div id="best-lifts"></div>
+                    </div>
+                </div>
+                <div class="card text-bg-warning">
+                    <div class="card-body p-2 d-flex align-items-center justify-content-start" style="min-height: 60px;">
+                        <span class="fs-3 me-2"><i class="bi bi-star-fill"></i></span>
+                        <div id="favorite-exercise" class="mb-0 fw-semibold" style="font-size: 1.1rem;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <hr>
+        <div>Made with <i class="bi bi-heart-fill text-danger"></i> by Your Fitness App &copy; 2025</div>
+    </div>
+</div>
+
+<script>
+    const userId = document.querySelector("#goal-user-id").value;
+
+    const exerciseTableBody = document.querySelector("#exercises-table");
+    const exerciseForm = document.querySelector("#exercise-form");
+    const goalExerciseSelect = document.querySelector("#goal-exercise-id");
+
+    const goalTableBody = document.querySelector("#goals-table");
+    const goalForm = document.querySelector("#goal-form");
+
+    const workoutTableBody = document.querySelector("#workout-table");
+    const workoutForm = document.querySelector("#workout-form");
+    const workoutItemsContainer = document.querySelector("#workout-items");
+
+    function fetchExercises() {
+        fetch('/api/exercises')
+            .then(res => res.json())
+            .then(data => {
+                exerciseTableBody.innerHTML = '';
+                goalExerciseSelect.innerHTML = '';
+                workoutItemsContainer.querySelectorAll("select").forEach(sel => sel.innerHTML = '');
+
+                data.forEach(ex => {
+                    exerciseTableBody.insertAdjacentHTML('beforeend', `
+                <tr>
+                    <td>${ex.id}</td>
+                    <td>${ex.name}</td>
+                    <td><button class="btn btn-danger btn-sm" onclick="deleteExercise(${ex.id})">Delete</button></td>
+                </tr>`);
+
+                    goalExerciseSelect.insertAdjacentHTML('beforeend', `<option value="${ex.id}">${ex.name}</option>`);
+                });
+
+                workoutItemsContainer.querySelectorAll("select").forEach(sel => {
+                    data.forEach(ex => {
+                        sel.insertAdjacentHTML('beforeend', `<option value="${ex.id}">${ex.name}</option>`);
+                    });
+                });
+            });
+    }
+
+    function deleteExercise(id) {
+        if (!confirm("Delete this exercise?")) return;
+        fetch(`/api/exercises/${id}`, { method: 'DELETE' })
+            .then(() => {
+                fetchExercises();
+                fetchGoals();
+            });
+    }
+
+    exerciseForm.addEventListener("submit", e => {
+        e.preventDefault();
+        const name = document.querySelector("#exercise-name").value.trim();
+        if (!name) return;
+
+        fetch('/api/exercises', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+        })
+            .then(() => {
+                document.querySelector("#exercise-name").value = '';
+                fetchExercises();
+            });
+    });
+
+    function fetchGoals() {
+        fetch(`/api/goals/${userId}`)
+            .then(res => res.json())
+            .then(data => {
+                goalTableBody.innerHTML = '';
+                data.forEach(goal => {
+                    goalTableBody.insertAdjacentHTML('beforeend', `
+                <tr>
+                    <td>${goal.id}</td>
+                    <td>${goal.exercise.name}</td>
+                    <td>${goal.targetWeight}</td>
+                    <td>${goal.targetDate}</td>
+                </tr>`);
+                });
+            });
+    }
+
+    goalForm.addEventListener("submit", e => {
+        e.preventDefault();
+        const exerciseId = goalExerciseSelect.value;
+        const targetWeight = document.querySelector("#goal-target-weight").value;
+        const targetDate = document.querySelector("#goal-target-date").value;
+
+        const params = new URLSearchParams({ userId, exerciseId, targetWeight, targetDate });
+        fetch(`/api/goals?${params.toString()}`, { method: 'POST' })
+            .then(() => {
+                fetchGoals();
+                goalForm.reset();
+            });
+    });
+
+    function addWorkoutItem() {
+        const div = document.createElement('div');
+        div.className = 'row g-2 mb-2';
+        div.innerHTML = `
+        <div class="col-md-3">
+            <select class="form-select workout-exercise-id" required></select>
+        </div>
+        <div class="col-md-2"><input type="number" class="form-control workout-planned-sets" placeholder="Sets" required /></div>
+        <div class="col-md-2"><input type="number" class="form-control workout-planned-reps" placeholder="Reps" required /></div>
+        <div class="col-md-3"><input type="number" class="form-control workout-planned-weight" placeholder="Weight (kg)" required /></div>
+        <div class="col-md-2"><button type="button" class="btn btn-danger" onclick="this.parentElement.parentElement.remove()">❌</button></div>`;
+        workoutItemsContainer.appendChild(div);
+
+        fetch('/api/exercises')
+            .then(res => res.json())
+            .then(data => {
+                const select = div.querySelector("select");
+                data.forEach(ex => {
+                    select.insertAdjacentHTML('beforeend', `<option value="${ex.id}">${ex.name}</option>`);
+                });
+            });
+    }
+
+    function fetchWorkoutPlans() {
+        fetch(`/api/workout/user/${userId}`)
+            .then(res => res.json())
+            .then(data => {
+                workoutTableBody.innerHTML = '';
+                data.forEach(plan => {
+                    const items = plan.items.map(item => `
+                    <div>
+                        ${item.exercise.name}: ${item.plannedSets}x${item.plannedReps} @ ${item.plannedWeight}kg
+                        ${plan.completed && item.actualWeight ? ` (Actual: ${item.actualSets}x${item.actualReps} @ ${item.actualWeight}kg)` : ''}
+                    </div>`).join('');
+
+                    workoutTableBody.insertAdjacentHTML('beforeend', `
+                <tr>
+                    <td>${plan.id}</td>
+                    <td>${plan.date}</td>
+                    <td>${items}</td>
+                    <td>${plan.completed ? '✅' : '❌'}</td>
+                    <td>
+                        ${!plan.completed ? `<button class="btn btn-success btn-sm" onclick="markComplete(${plan.id})">Complete</button>` : ''}
+                        <button class="btn btn-danger btn-sm" onclick="deleteWorkout(${plan.id})">Delete</button>
+                    </td>
+                </tr>`);
+                });
+            });
+        fetchStats();
+    }
+
+    workoutForm.addEventListener("submit", e => {
+        e.preventDefault();
+
+        const workoutDate = document.querySelector("#workout-date").value;
+        const userId = document.querySelector("#workout-user-id").value;
+
+        const items = Array.from(workoutItemsContainer.children).map(row => {
+            return {
+                exerciseId: row.querySelector(".workout-exercise-id").value,
+                plannedSets: row.querySelector(".workout-planned-sets").value,
+                plannedReps: row.querySelector(".workout-planned-reps").value,
+                plannedWeight: row.querySelector(".workout-planned-weight").value
+            };
+        });
+
+        fetch("/api/workout/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                userId,
+                date: workoutDate,
+                items: items
+            })
+        }).then(() => {
+            fetchWorkoutPlans();
+            workoutForm.reset();
+            workoutItemsContainer.innerHTML = "";
+            addWorkoutItem(); // Reset with one row
+        });
+    });
+
+    function deleteWorkout(id) {
+        if (!confirm("Delete this workout plan?")) return;
+        fetch(`/api/workout/${id}`, { method: 'DELETE' }).then(() => fetchWorkoutPlans());
+    }
+
+    function markComplete(planId) {
+        fetch(`/api/workout/user/${userId}`)
+            .then(res => res.json())
+            .then(plans => {
+                const plan = plans.find(p => p.id === planId);
+                if (!plan) return;
+
+                const actualItems = plan.items.map(item => ({
+                    exercise: { id: item.exercise.id },
+                    actualSets: item.plannedSets,
+                    actualReps: item.plannedReps,
+                    actualWeight: item.plannedWeight
+                }));
+
+                fetch(`/api/workout/complete/${planId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(actualItems)
+                }).then(() => fetchWorkoutPlans());
+            });
+    }
+
+    function fetchStats() {
+        fetch(`/api/workout/stats/weekly/${userId}`)
+            .then(res => res.json())
+            .then(data => {
+                document.querySelector("#weekly-stats").innerHTML = `
+                    <div>Workouts Completed: <b>${data.workoutsCompleted}</b></div>
+                    <div>Total Weight Lifted: <b>${data.totalWeightLifted} kg</b></div>`;
+            });
+
+        fetch(`/api/workout/stats/monthly/${userId}`)
+            .then(res => res.json())
+            .then(data => {
+                const div = document.querySelector("#monthly-stats");
+                div.innerHTML = '';
+                const months = [], workouts = [], weights = [];
+                for (const [month, stats] of Object.entries(data)) {
+                    months.push(month);
+                    workouts.push(stats.workoutsCompleted);
+                    weights.push(stats.totalWeightLifted);
+                    div.innerHTML += `<div><b>${month}</b> — Workouts: ${stats.workoutsCompleted}, Weight: ${stats.totalWeightLifted} kg</div>`;
+                }
+                // Chart.js
+                if (window.monthlyStatsChart) window.monthlyStatsChart.destroy();
+                const ctx = document.getElementById('monthly-stats-chart').getContext('2d');
+                window.monthlyStatsChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: months,
+                        datasets: [
+                            {
+                                label: 'Workouts',
+                                data: workouts,
+                                backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Total Weight (kg)',
+                                data: weights,
+                                backgroundColor: 'rgba(255, 206, 86, 0.7)',
+                                borderColor: 'rgba(255, 206, 86, 1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { position: 'top' } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            });
+
+        fetch(`/api/workout/stats/best/${userId}`)
+            .then(res => res.json())
+            .then(data => {
+                const div = document.querySelector("#best-lifts");
+                div.innerHTML = '';
+                Object.entries(data).forEach(([exercise, weight]) => {
+                    div.innerHTML += `<div>${exercise}: <b>${weight} kg</b></div>`;
+                });
+            });
+
+        fetch(`/api/workout/stats/favorite/${userId}`)
+            .then(res => res.text())
+            .then(text => {
+                document.querySelector("#favorite-exercise").innerHTML =
+                    `Your most frequent exercise is: <b>${text}</b>`;
+            });
+    }
+
+    fetchExercises();
+    fetchGoals();
+    fetchWorkoutPlans();
+    addWorkoutItem();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</body>
+</html>
