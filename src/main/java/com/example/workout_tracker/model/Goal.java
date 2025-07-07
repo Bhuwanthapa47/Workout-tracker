@@ -6,9 +6,21 @@ import java.time.LocalDate;
 
 @Entity
 public class Goal {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    }
+
+    private boolean completed = false;
+
 
     @ManyToOne
     private User user;

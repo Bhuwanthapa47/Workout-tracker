@@ -7,6 +7,7 @@ import com.example.workout_tracker.repository.ExerciseRepository;
 import com.example.workout_tracker.repository.GoalRepository;
 import com.example.workout_tracker.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -50,4 +51,22 @@ public class GoalController {
     public List<Goal> getGoals(@PathVariable Long userId) {
         return goalRepository.findByUserId(userId);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteGoal(@PathVariable Long id) {
+        goalRepository.deleteById(id);
+        return ResponseEntity.ok("Goal deleted successfully");
+    }
+
+    @PostMapping("/complete/{goalId}")
+    public ResponseEntity<String> completeGoal(@PathVariable Long goalId) {
+        Goal goal = goalRepository.findById(goalId).orElseThrow(() -> new RuntimeException("Goal not found"));
+        goal.setCompleted(true);
+        goalRepository.save(goal);
+        return ResponseEntity.ok("Goal marked as completed");
+    }
+
+
+
+
 }

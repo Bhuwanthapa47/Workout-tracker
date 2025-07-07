@@ -124,8 +124,11 @@
                     <th>Exercise</th>
                     <th>Target Weight</th>
                     <th>Target Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                 </tr>
                 </thead>
+
                 <tbody id="goals-table"></tbody>
             </table>
         </div>
@@ -291,13 +294,19 @@
                 goalTableBody.innerHTML = '';
                 data.forEach(goal => {
                     goalTableBody.insertAdjacentHTML('beforeend', `
-                <tr>
-                    <td>${goal.id}</td>
-                    <td>${goal.exercise.name}</td>
-                    <td>${goal.targetWeight}</td>
-                    <td>${goal.targetDate}</td>
-                </tr>`);
+<tr>
+    <td>${goal.id}</td>
+    <td>${goal.exercise.name}</td>
+    <td>${goal.targetWeight}</td>
+    <td>${goal.targetDate}</td>
+    <td>${goal.completed ? '✅ Completed' : '❌ Pending'}</td>
+    <td>
+        <button class="btn btn-danger btn-sm me-1" onclick="deleteGoal(${goal.id})">Delete</button>
+        ${!goal.completed ? `<button class="btn btn-success btn-sm" onclick="completeGoal(${goal.id})">Mark Completed</button>` : ''}
+    </td>
+</tr>`);
                 });
+
             });
     }
 
@@ -426,6 +435,22 @@
                 }).then(() => fetchWorkoutPlans());
             });
     }
+
+    function deleteGoal(goalId) {
+        if (!confirm("Delete this goal?")) return;
+        fetch(`/api/goals/${goalId}`, {
+            method: 'DELETE'
+        })
+            .then(() => fetchGoals());
+    }
+
+    function completeGoal(goalId) {
+        fetch(`/api/goals/complete/${goalId}`, {
+            method: 'POST'
+        })
+            .then(() => fetchGoals());
+    }
+
 
     function fetchStats() {
         fetch(`/api/workout/stats/weekly/${userId}`)
