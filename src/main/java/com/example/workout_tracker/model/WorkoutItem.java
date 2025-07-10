@@ -16,7 +16,6 @@ public class WorkoutItem {
     private Integer actualReps;
     private Double actualWeight;
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,12 +25,12 @@ public class WorkoutItem {
     @JsonBackReference
     private WorkoutPlan workoutPlan;
 
-
     @ManyToOne
     @JoinColumn(name = "exercise_id")
     private Exercise exercise;
 
-    private Integer sets;
-    private Integer reps;
-    private Double weight; // per rep
+    private Integer plannedSets;
+    private Integer plannedReps;
+    private Double plannedWeight;
 }
+

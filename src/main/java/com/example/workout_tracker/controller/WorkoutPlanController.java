@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/workout")
@@ -102,8 +103,7 @@ public class WorkoutPlanController {
         for (WorkoutPlan plan : plans) {
             for (WorkoutItem item : plan.getItems()) {
                 if (item.getActualSets() != null && item.getActualReps() != null && item.getActualWeight() != null) {
-                    totalWeightLifted +=
-                            item.getActualSets() * item.getActualReps() * item.getActualWeight();
+                    totalWeightLifted += item.getActualWeight();
                 }
             }
         }
@@ -186,6 +186,31 @@ public class WorkoutPlanController {
 
         return monthlyStats;
     }
+
+    @GetMapping("/user/{userId}/filter")
+    public List<WorkoutPlan> filterPlans(
+            @PathVariable Long userId,
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to,
+            @RequestParam(required = false) Long exerciseId
+    ) {
+        LocalDate fromDate = (from != null && !from.isEmpty()) ? LocalDate.parse(from) : null;
+        LocalDate toDate = (to != null && !to.isEmpty()) ? LocalDate.parse(to) : null;
+
+        List<WorkoutPlan> plans = workoutPlanRepository.findByUserIdAndCompletedIsTrue(userId);
+
+        return plans.stream()
+                .filter(plan -> {
+                    boolean dateMatch = true;
+                    if (fromDate != null) dateMatch &= !plan.getDate().isBefore(fromDate);
+                    if (toDate != null) dateMatch &= !plan.getDate().isAfter(toDate);
+                    boolean exerciseMatch = (exerciseId == null || exerciseId == 0) ||
+                            plan.getItems().stream().anyMatch(i -> i.getExercise().getId().equals(exerciseId));
+                    return dateMatch && exerciseMatch;
+                })
+                .collect(Collectors.toList());
+    }
+
 
 
 
